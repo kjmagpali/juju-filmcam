@@ -30,7 +30,7 @@
       align-items: center;
       justify-content: space-between;
       height: 100vh;
-      height: 100dvh; /* Safeguards Safari/Chrome toolbar height */
+      height: 100dvh; /* Safeguards mobile address/navigation bar overlaps */
       overflow: hidden;
     }
 
@@ -64,14 +64,14 @@
       font-weight: bold;
     }
 
-    /* Viewfinder: True 2:3 Portrait Crop */
+    /* Viewfinder: True 2:3 Portrait Crop with elegant thin outline */
     .viewfinder-wrapper {
       position: relative;
       width: 100%;
-      aspect-ratio: 2/3; /* Standard SLR portrait framing ratio */
+      aspect-ratio: 2/3; /* Standard analog SLR portrait framing ratio */
       background-color: #020202;
-      border: 8px solid var(--brand-cream);
-      border-radius: 4px; /* Crisp mechanical square-edge framing */
+      border: 2px solid var(--brand-cream); /* Thinner elegant cream border */
+      border-radius: 4px;
       overflow: hidden;
       box-shadow: inset 0 0 40px rgba(0,0,0,1), 0 8px 30px rgba(0,0,0,0.7);
     }
@@ -80,12 +80,12 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* Simulated Portra 400 Film Filter: Warm tones, soft greens, saturated golds */
-      filter: sepia(0.25) contrast(1.15) saturate(1.22) hue-rotate(-6deg) brightness(1.02);
+      /* CSS real-time preview simulation of Kodak Portra 400 */
+      filter: sepia(0.22) contrast(1.18) saturate(1.22) hue-rotate(-6deg) brightness(1.02);
       transition: filter 0.1s ease;
     }
 
-    /* Screen Flash Overlay */
+    /* Screen Hardware Flash Simulation */
     #flashOverlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
@@ -105,7 +105,7 @@
       padding: 15px;
     }
 
-    /* SLR Camera Focus Reticle */
+    /* SLR Camera Center Focus Bracket */
     .viewfinder-reticle {
       position: absolute;
       top: 50%; left: 50%;
@@ -130,7 +130,7 @@
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC45MCIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvY3ZnPg==');
-      opacity: 0.15;
+      opacity: 0.12;
       pointer-events: none;
     }
 
@@ -176,7 +176,7 @@
       font-weight: bold;
     }
 
-    /* Shutter Button Setup */
+    /* Mechanical Shutter Trigger Base */
     .shutter-wrapper {
       position: relative;
       width: 85px;
@@ -218,25 +218,30 @@
       pointer-events: none;
     }
 
-    /* Cycle Lens Tactile Button */
-    .btn-lens-cycle {
+    /* Flip Camera Toggle Button */
+    .btn-camera-flip {
       background: var(--brand-cream);
       color: var(--brand-red);
       border: 1px solid var(--brand-cream);
-      border-radius: 4px;
-      padding: 10px 14px;
-      font-family: inherit;
-      font-size: 0.75rem;
-      font-weight: bold;
-      text-transform: uppercase;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      min-width: 90px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
     }
 
-    .btn-lens-cycle:active {
-      transform: scale(0.95);
+    .btn-camera-flip:active {
+      transform: scale(0.9);
       background-color: #e2dfb3;
+    }
+
+    .flip-icon {
+      width: 24px;
+      height: 24px;
+      fill: var(--brand-red);
     }
 
     #status-msg {
@@ -248,14 +253,14 @@
       letter-spacing: 1px;
     }
 
-    /* Simulated Screen Flash Overlay Animation */
+    /* Simulated Screen Flash Animation */
     .flash-triggered {
-      animation: hardwareFlashEffect 0.2s ease-out;
+      animation: hardwareFlashEffect 0.22s ease-out;
     }
 
     @keyframes hardwareFlashEffect {
       0% { opacity: 0; }
-      15% { opacity: 1; }
+      20% { opacity: 1; }
       100% { opacity: 0; }
     }
   </style>
@@ -268,7 +273,7 @@
       <span class="analog-meter" style="color: var(--status-green);">• ONLINE</span>
     </div>
 
-    <!-- Camera Viewfinder with strict Portrait 2:3 boundaries -->
+    <!-- Camera Viewfinder -->
     <div class="viewfinder-wrapper">
       <video id="viewfinder" autoplay playsinline muted></video>
       <div id="flashOverlay"></div>
@@ -283,23 +288,27 @@
     <!-- Bottom Mechanical Panel Layout -->
     <div class="control-panel">
       <div class="dashboard-row">
-        <!-- Mechanical Counter -->
+        <!-- Index Counter Display -->
         <div class="counter-display">
           <span class="counter-label">INDEX</span>
           <span class="counter-value" id="counterDisplay">20</span>
         </div>
 
-        <!-- Shutter Trigger -->
+        <!-- Shutter Capture Trigger -->
         <div class="shutter-wrapper">
-          <button class="btn-shutter" id="snapBtn" aria-label="Mechanical Shutter Snap Button"></button>
+          <button class="btn-shutter" id="snapBtn" aria-label="Mechanical Shutter Button"></button>
           <div class="shutter-ring"></div>
         </div>
 
-        <!-- Lens Select Selector -->
-        <button class="btn-lens-cycle" id="cycleLensBtn">CYCLE LENS</button>
+        <!-- Flip Camera Button (Front/Rear Loop) -->
+        <button class="btn-camera-flip" id="flipCamBtn" aria-label="Flip Camera Lens">
+          <svg class="flip-icon" viewBox="0 0 24 24" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
+            <path d="M19 8l-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/>
+          </svg>
+        </button>
       </div>
       
-      <p id="status-msg">LOADING SYSTEM...</p>
+      <p id="status-msg">LOADING CAMERA SYSTEM...</p>
     </div>
   </div>
 
@@ -317,8 +326,7 @@
 
     let shotsTaken = 0;
     let localStream = null;
-    let videoDevices = [];
-    let currentDeviceIndex = 0;
+    let currentFacingMode = "environment"; // Starts with Rear/Main Camera
     const uploadQueue = [];
     let isUploading = false;
 
@@ -327,11 +335,11 @@
     const context = canvas.getContext('2d');
     const counterDisplay = document.getElementById('counterDisplay');
     const snapBtn = document.getElementById('snapBtn');
-    const cycleLensBtn = document.getElementById('cycleLensBtn');
+    const flipCamBtn = document.getElementById('flipCamBtn');
     const statusMsg = document.getElementById('status-msg');
     const flashOverlay = document.getElementById('flashOverlay');
 
-    // 1. RUNTIME SETUP & BACKGROUND ROLL SYNC
+    // 1. SYSTEM INITIALIZATION & DISK SYNC
     async function syncRollStatus() {
       try {
         const response = await fetch(`${GAS_URL}?deviceId=${deviceId}`);
@@ -340,13 +348,12 @@
         
         updateUI();
         if (shotsTaken < MAX_SHOTS) {
-          await initCamera();
+          await startCamera();
         }
       } catch (err) {
         console.error(err);
-        statusMsg.innerText = "SYNC FAILED. RE-SHUTTER.";
-        // Fallback camera start even on network failure
-        await initCamera();
+        statusMsg.innerText = "OFFLINE - SHUTTER ACTIVE";
+        await startCamera(); // Allow offline fallback shooting
       }
     }
 
@@ -356,7 +363,7 @@
       
       if (remaining <= 0) {
         snapBtn.disabled = true;
-        statusMsg.innerText = "ROLL EMPTY. SHUTTER LOCKED.";
+        statusMsg.innerText = "ROLL EMPTY. MECHANICS LOCKED.";
         if (localStream) {
           localStream.getTracks().forEach(track => track.stop());
         }
@@ -366,64 +373,17 @@
       }
     }
 
-    // 2. LENS CYCLING & HD CONFIGURATIONS
-    async function initCamera() {
-      try {
-        await enumerateCameras();
-        await startCameraWithIndex(currentDeviceIndex);
-      } catch (err) {
-        console.error(err);
-        statusMsg.innerText = "LENS SELECTOR FAILURE.";
-      }
-    }
-
-    async function enumerateCameras() {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        videoDevices = devices.filter(d => d.kind === 'videoinput');
-      } catch (err) {
-        console.error("Camera index enumeration failure:", err);
-      }
-    }
-
-    cycleLensBtn.addEventListener('click', async () => {
-      if (videoDevices.length <= 1) {
-        statusMsg.innerText = "SINGLE SYSTEM CAMERA ONLY";
-        return;
-      }
-      currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
-      await startCameraWithIndex(currentDeviceIndex);
-    });
-
-    async function startCameraWithIndex(index) {
+    // 2. HARDENED UNIVERSAL FRONT/BACK CAMERA TRIGGER
+    async function startCamera() {
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
       }
 
-      if (videoDevices.length === 0) {
-        // Safe standard fallback constraints
-        try {
-          localStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { ideal: "environment" },
-              width: { ideal: 3840 },
-              height: { ideal: 2160 }
-            },
-            audio: false
-          });
-          video.srcObject = localStream;
-        } catch (e) {
-          statusMsg.innerText = "SYSTEM REJECTED CAMERA ACCESS";
-        }
-        return;
-      }
-
-      const device = videoDevices[index];
       const constraints = {
         video: {
-          deviceId: { exact: device.deviceId },
-          // Maximum Ultra HD stream allocation
-          width: { ideal: 3840 },
+          facingMode: currentFacingMode,
+          // Request maximum resolution capabilities of physical sensor (4K/HD)
+          width: { ideal: 4096 },
           height: { ideal: 2160 }
         },
         audio: false
@@ -432,31 +392,32 @@
       try {
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = localStream;
-        
-        let label = device.label || `LENS ${index}`;
-        // Map common cameras for aesthetic feedback
-        if (label.toLowerCase().includes('back')) {
-          label = label.toLowerCase().includes('wide') ? "0.5x ULTRA-WIDE LENS" : "1.0x MAIN LENS";
-        } else if (label.toLowerCase().includes('front')) {
-          label = "FRONT FACING PORTRAIT LENS";
-        }
-        statusMsg.innerText = label.toUpperCase();
+        statusMsg.innerText = currentFacingMode === "environment" ? "MAIN BACK LENS" : "PORTRAIT FRONT LENS";
       } catch (err) {
-        console.warn("Retrying default facingMode constraints for index:", index, err);
+        console.warn("High-res constraints rejected, falling back to standard resolution...", err);
         try {
+          // Standard HD capture fallback
           localStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: index % 2 === 0 ? "environment" : "user", width: { ideal: 3840 } },
+            video: { facingMode: currentFacingMode },
             audio: false
           });
           video.srcObject = localStream;
-          statusMsg.innerText = index % 2 === 0 ? "PRIMARY REAR LENS" : "FRONT FACING PORTRAIT LENS";
+          statusMsg.innerText = currentFacingMode === "environment" ? "BACK LENS (SD)" : "FRONT LENS (SD)";
         } catch (e) {
-          statusMsg.innerText = "SYSTEM REJECTED CAMERA ACCESS";
+          console.error("Camera system completely rejected:", e);
+          statusMsg.innerText = "LENS ACQUISITION FAILURE";
         }
       }
     }
 
-    // 3. HARDWARE LED FLASH INTERFACE CONTROLS
+    // Toggle facing modes explicitly
+    flipCamBtn.addEventListener('click', async () => {
+      currentFacingMode = currentFacingMode === "environment" ? "user" : "environment";
+      statusMsg.innerText = "SWAPPING GLASS...";
+      await startCamera();
+    });
+
+    // 3. HARDWARE LED FLASH MANAGEMENT
     async function setHardwareTorch(on) {
       if (!localStream) return;
       const track = localStream.getVideoTracks()[0];
@@ -469,80 +430,93 @@
             });
           }
         } catch (e) {
-          console.warn("Hardware led flash controls not available on this camera", e);
+          console.warn("Hardware LED flash controls unsupported by this system lens configuration.", e);
         }
       }
     }
 
-    // 4. INSTANTANEOUS CAPTURE & ASYNC BACK-TO-BACK QUEUING
+    // 4. INSTANT SHUTTER SNAP & LOSSLESS DUAL-LAYER PROCESSING
     snapBtn.addEventListener('click', async () => {
       if (shotsTaken >= MAX_SHOTS) return;
 
-      // Lock shutter button momentarily during mechanics (~150ms delay total)
+      // Lock buttons momentarily to prevent quick double snaps (100ms cycle delay)
       snapBtn.disabled = true;
 
-      // Increment counter immediately to block lag and lock out double clicks
+      // Decrement remaining counter instantly in UI
       shotsTaken++;
       updateUI();
 
-      // Trigger structural white screen flash overlay
+      // Trigger structural white screen flash overlay (Visual feedback)
       flashOverlay.classList.remove('flash-triggered');
       void flashOverlay.offsetWidth;
       flashOverlay.classList.add('flash-triggered');
 
-      // Attempt physical hardware LED flash trigger
+      // Force physical LED flash active
       await setHardwareTorch(true);
 
-      // Lock current stream dimensions immediately to canvas
+      // Match canvas size to native incoming camera stream parameters
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // --- CAPTURE 1: LOSS-LESS ULTRA HD RAW NEGATIVE ---
+      // --- CAPTURE 1: LOSSLESS RAW NEGATIVE PNG ---
       context.filter = "none";
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const rawImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); // 1.0 = Lossless Ultra HD export Quality
+      const rawImageDataUrl = canvas.toDataURL('image/png'); // Full Lossless PNG capture
       const rawBase64 = rawImageDataUrl.split(',')[1];
 
-      // --- CAPTURE 2: LOSS-LESS PORTRA 400 EMULATED PRINT ---
-      // Hardened Kodak Portra emulation values
-      context.filter = "sepia(0.25) contrast(1.15) saturate(1.22) hue-rotate(-6deg) brightness(1.02)";
+      // --- CAPTURE 2: LOSSLESS DEVELOPED PRINT (BAKED PORTRA 400 EMULATION) ---
+      // Draw base frame
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      const filteredImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); // Lossless quality
+      // Multi-browser backup layer filter drawing to guarantee Portra 400 look in GDrive
+      // Layer A: Golden warm soft highlights
+      context.globalCompositeOperation = 'soft-light';
+      context.fillStyle = 'rgba(255, 140, 0, 0.22)'; 
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Layer B: Subtle sepia wash
+      context.globalCompositeOperation = 'color';
+      context.fillStyle = 'rgba(112, 66, 20, 0.12)'; 
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Reset composite operation to normal
+      context.globalCompositeOperation = 'source-over';
+
+      const filteredImageDataUrl = canvas.toDataURL('image/png'); // Full Lossless PNG print
       const filteredBase64 = filteredImageDataUrl.split(',')[1];
 
-      // De-active LED physical flash immediately after frame capture
+      // De-active LED flash
       setTimeout(async () => {
         await setHardwareTorch(false);
-      }, 100);
+      }, 80);
 
-      // Release shutter block instantly within 150ms for rapid consecutive snaps!
+      // Release mechanical shutter block for back-to-back rapid shooting
       setTimeout(() => {
         if (shotsTaken < MAX_SHOTS) {
           snapBtn.disabled = false;
           statusMsg.innerText = "READY";
         }
-      }, 150);
+      }, 100);
 
-      // Queue payloads into non-blocking background network thread
+      // Push raw and filtered PNG packets into background uploader queue
       uploadQueue.push({
         filteredImage: filteredBase64,
         rawImage: rawBase64,
         deviceId: deviceId
       });
 
-      // Fire off processor thread asynchronously
+      // Fire upload processing loop
       processUploadQueue();
     });
 
-    // 5. SECURE BACKGROUND UPLOAD CONTROLS
+    // 5. ASYNC BACKGROUND NON-BLOCKING UPLOAD QUEUE
     function processUploadQueue() {
       if (isUploading || uploadQueue.length === 0) return;
       isUploading = true;
 
       const currentTask = uploadQueue[0];
-      const itemsLeft = uploadQueue.length;
-      statusMsg.innerText = `WINDING FILM... (${itemsLeft} IN COCKPIT)`;
+      const itemsPending = uploadQueue.length;
+      statusMsg.innerText = `DEVELOPING SHOT... (${itemsPending} QUEUED)`;
 
       fetch(GAS_URL, {
         method: 'POST',
@@ -556,18 +530,17 @@
         if (uploadQueue.length === 0) {
           statusMsg.innerText = shotsTaken >= MAX_SHOTS ? "ROLL EMPTY. SHUTTER LOCKED." : "READY";
         } else {
-          // Process next background file
           processUploadQueue();
         }
       }).catch(err => {
-        console.error("Transmission failed, retrying in 3 seconds...", err);
+        console.error("Network upload drop, retrying background thread in 3s...", err);
         isUploading = false;
-        statusMsg.innerText = "UPLOADER DROPPED. RETRYING...";
+        statusMsg.innerText = "CONNECTION DROP. RETRYING...";
         setTimeout(processUploadQueue, 3000); // Retry loop
       });
     }
 
-    // Boot up
+    // Boot camera sequence
     syncRollStatus();
   </script>
 </body>
