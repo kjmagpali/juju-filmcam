@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Disposable Camera</title>
+  <title>Mechanical Camera UI</title>
   <style>
     :root {
       --brand-red: #3D0C0C;
       --brand-cream: #FDFDD0;
-      --orange-stamp: #ff5500;
+      --metallic-rim: #e2dfb3;
+      --status-green: #39FF14;
     }
 
     * {
@@ -29,6 +30,7 @@
       align-items: center;
       justify-content: space-between;
       height: 100vh;
+      height: 100dvh; /* Safeguards Safari/Chrome toolbar height */
       overflow: hidden;
     }
 
@@ -36,63 +38,61 @@
       width: 100%;
       max-width: 450px;
       height: 100%;
-      padding: 20px 15px;
+      padding: 15px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
     }
 
-    header {
-      margin-top: 5px;
+    /* Tactile Analog Details */
+    .top-dial-section {
+      width: 100%;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-    }
-
-    /* Branded stylized Character Icon Render (Inline SVG) */
-    .character-logo {
-      width: 70px;
-      height: 70px;
+      padding: 5px 10px;
+      border-bottom: 2px dashed rgba(253, 253, 208, 0.2);
       margin-bottom: 5px;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      letter-spacing: 2px;
-      color: var(--brand-cream);
-      margin: 0 0 5px 0;
-      text-transform: uppercase;
-      font-weight: 900;
-    }
-
-    .subtitle {
+    .analog-meter {
       font-size: 0.75rem;
-      color: rgba(253, 253, 208, 0.6);
-      margin: 0;
-      text-transform: uppercase;
       letter-spacing: 1px;
+      color: var(--brand-cream);
+      text-transform: uppercase;
+      font-weight: bold;
     }
 
-    /* Elegant arch-shaped framing inspired by your menu cards */
+    /* Viewfinder: True 2:3 Portrait Crop */
     .viewfinder-wrapper {
       position: relative;
       width: 100%;
-      aspect-ratio: 3/4;
-      background-color: #050505;
-      border: 6px solid var(--brand-cream);
-      border-radius: 140px 140px 16px 16px; /* Perfect top arch design */
+      aspect-ratio: 2/3; /* Standard SLR portrait framing ratio */
+      background-color: #020202;
+      border: 8px solid var(--brand-cream);
+      border-radius: 4px; /* Crisp mechanical square-edge framing */
       overflow: hidden;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 8px 25px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 40px rgba(0,0,0,1), 0 8px 30px rgba(0,0,0,0.7);
     }
 
     #viewfinder {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* Simulated Kodak Portra 400 Real-Time Color Grade Profile */
-      filter: sepia(0.25) contrast(1.15) brightness(1.0) saturate(1.25) hue-rotate(-5deg);
+      /* Simulated Portra 400 Film Filter: Warm tones, soft greens, saturated golds */
+      filter: sepia(0.25) contrast(1.15) saturate(1.22) hue-rotate(-6deg) brightness(1.02);
       transition: filter 0.1s ease;
+    }
+
+    /* Screen Flash Overlay */
+    #flashOverlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
     }
 
     .viewfinder-overlay {
@@ -102,64 +102,81 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 20px;
+      padding: 15px;
     }
 
-    /* Subtle Film Grain Layer Overlay */
+    /* SLR Camera Focus Reticle */
+    .viewfinder-reticle {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 40px; height: 40px;
+      border: 1px dashed var(--brand-cream);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+    }
+
+    .viewfinder-reticle::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 6px; height: 6px;
+      background-color: var(--brand-cream);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+
     .grain-layer {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC44NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvY3ZnPg==');
-      opacity: 0.12;
+      background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC45MCIgbnVtT2N0YXZlcz0iMiIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvY3ZnPg==');
+      opacity: 0.15;
       pointer-events: none;
     }
 
-    /* Analog Portra-Style Date Stamp */
-    .date-stamp {
-      position: absolute;
-      bottom: 20px;
-      right: 25px;
-      color: var(--orange-stamp);
-      font-weight: bold;
-      font-size: 1.1rem;
-      letter-spacing: 3px;
-      text-shadow: 0 0 3px rgba(255, 85, 0, 0.7);
-      font-family: 'Courier New', monospace;
-    }
-
+    /* Camera control panel at bottom */
     .control-panel {
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 15px;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .dashboard-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
     }
 
     .counter-display {
       background: rgba(253, 253, 208, 0.1);
-      padding: 6px 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(253, 253, 208, 0.2);
-      display: inline-flex;
+      padding: 8px 16px;
+      border-radius: 4px;
+      border: 1px solid var(--brand-cream);
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      min-width: 90px;
     }
 
     .counter-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       color: rgba(253, 253, 208, 0.6);
       letter-spacing: 1px;
+      margin-bottom: 2px;
     }
 
     .counter-value {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       color: var(--brand-cream);
       font-weight: bold;
     }
 
-    /* Analog Cream Shutter Button Layout */
+    /* Shutter Button Setup */
     .shutter-wrapper {
       position: relative;
       width: 85px;
@@ -173,15 +190,15 @@
       height: 100%;
       border-radius: 50%;
       background: radial-gradient(circle, #ffffff 0%, var(--brand-cream) 100%);
-      border: 6px solid #e2dfb3;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.4);
+      border: 6px solid var(--metallic-rim);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.4);
       cursor: pointer;
     }
 
     .btn-shutter:active {
-      transform: scale(0.95);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.7), inset 0 2px 4px rgba(0,0,0,0.3);
-      background: radial-gradient(circle, var(--brand-cream) 0%, #d4cf9e 100%);
+      transform: scale(0.94);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.8), inset 0 2px 4px rgba(0,0,0,0.3);
+      background: radial-gradient(circle, var(--brand-cream) 0%, #dcd7a5 100%);
     }
 
     .btn-shutter:disabled {
@@ -201,120 +218,120 @@
       pointer-events: none;
     }
 
+    /* Cycle Lens Tactile Button */
+    .btn-lens-cycle {
+      background: var(--brand-cream);
+      color: var(--brand-red);
+      border: 1px solid var(--brand-cream);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      min-width: 90px;
+    }
+
+    .btn-lens-cycle:active {
+      transform: scale(0.95);
+      background-color: #e2dfb3;
+    }
+
     #status-msg {
-      font-size: 0.8rem;
-      color: rgba(253, 253, 208, 0.7);
-      height: 20px;
-      margin: 4px 0 0 0;
+      font-size: 0.75rem;
+      color: var(--brand-cream);
+      height: 18px;
+      margin: 2px 0 0 0;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
 
-    /* Shutter Flash Animation */
-    .flash-active {
-      animation: cameraFlash 0.35s ease-out;
+    /* Simulated Screen Flash Overlay Animation */
+    .flash-triggered {
+      animation: hardwareFlashEffect 0.2s ease-out;
     }
 
-    @keyframes cameraFlash {
-      0% { filter: brightness(1) contrast(1.15); opacity: 1; }
-      25% { filter: brightness(20) contrast(0.2); opacity: 0.2; }
-      100% { filter: brightness(1) contrast(1.15); opacity: 1; }
+    @keyframes hardwareFlashEffect {
+      0% { opacity: 0; }
+      15% { opacity: 1; }
+      100% { opacity: 0; }
     }
   </style>
 </head>
 <body>
 
   <div class="app-container">
-    <header>
-      <!-- Stylized vector character matching menu_print icon -->
-      <svg class="character-logo" viewBox="0 0 100 100" fill="none" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)">
-        <circle cx="50" cy="50" r="45" fill="#3D0C0C" stroke="#FDFDD0" stroke-width="3"/>
-        <!-- Stylized Ears -->
-        <path d="M12 40 C5 40 5 60 12 60 Z" fill="#FDFDD0" stroke="#3D0C0C" stroke-width="2"/>
-        <path d="M88 40 C95 40 95 60 88 60 Z" fill="#FDFDD0" stroke="#3D0C0C" stroke-width="2"/>
-        <!-- Spiky Hair Outlines -->
-        <path d="M20 40 L30 18 L42 28 L50 12 L58 28 L70 18 L80 40 L74 48 L65 42 L50 48 L35 42 L26 48 Z" fill="#FDFDD0"/>
-        <!-- Face Structure -->
-        <path d="M22 40 C22 65 35 78 50 78 C65 78 78 65 78 40" fill="#FDFDD0"/>
-        <!-- Spiky Hair Bangs -->
-        <path d="M22 40 L34 44 L38 32 L46 45 L50 35 L54 45 L62 32 L66 44 L78 40" stroke="#3D0C0C" stroke-width="3" stroke-linecap="round"/>
-        <!-- Stylized Cheek Scars/Stars -->
-        <path d="M28 55 L32 55 M30 53 L30 57" stroke="#3D0C0C" stroke-width="2" stroke-linecap="round"/>
-        <path d="M72 55 L68 55 M70 53 L70 57" stroke="#3D0C0C" stroke-width="2" stroke-linecap="round"/>
-        <!-- Determination Eyes -->
-        <path d="M30 48 Q38 46 42 50" stroke="#3D0C0C" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M70 48 Q62 46 58 50" stroke="#3D0C0C" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <!-- Sharp pupils -->
-        <circle cx="37" cy="51" r="2.5" fill="#3D0C0C"/>
-        <circle cx="63" cy="51" r="2.5" fill="#3D0C0C"/>
-        <!-- Smirk -->
-        <path d="M43 62 Q50 64 57 60" stroke="#3D0C0C" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </svg>
-      <h1>Disposable</h1>
-      <p class="subtitle">Portra 400 Film</p>
-    </header>
+    <div class="top-dial-section">
+      <span class="analog-meter">BATT: 100%</span>
+      <span class="analog-meter" style="color: var(--status-green);">• ONLINE</span>
+    </div>
 
-    <!-- Camera Viewfinder -->
+    <!-- Camera Viewfinder with strict Portrait 2:3 boundaries -->
     <div class="viewfinder-wrapper">
       <video id="viewfinder" autoplay playsinline muted></video>
+      <div id="flashOverlay"></div>
       <div class="viewfinder-overlay">
         <div class="grain-layer"></div>
-        <div class="date-stamp" id="dateStamp">99 12 31</div>
+        <div class="viewfinder-reticle"></div>
       </div>
     </div>
 
     <canvas id="captureCanvas" style="display:none;"></canvas>
 
-    <!-- Interface Dashboard -->
+    <!-- Bottom Mechanical Panel Layout -->
     <div class="control-panel">
-      <div class="counter-display">
-        <span class="counter-label">Roll Shots Left:</span>
-        <span class="counter-value" id="counterDisplay">20</span>
-      </div>
+      <div class="dashboard-row">
+        <!-- Mechanical Counter -->
+        <div class="counter-display">
+          <span class="counter-label">INDEX</span>
+          <span class="counter-value" id="counterDisplay">20</span>
+        </div>
 
-      <div class="shutter-wrapper">
-        <button class="btn-shutter" id="snapBtn" aria-label="Shutter Snap Button"></button>
-        <div class="shutter-ring"></div>
+        <!-- Shutter Trigger -->
+        <div class="shutter-wrapper">
+          <button class="btn-shutter" id="snapBtn" aria-label="Mechanical Shutter Snap Button"></button>
+          <div class="shutter-ring"></div>
+        </div>
+
+        <!-- Lens Select Selector -->
+        <button class="btn-lens-cycle" id="cycleLensBtn">CYCLE LENS</button>
       </div>
       
-      <p id="status-msg">Loading film roll...</p>
+      <p id="status-msg">LOADING SYSTEM...</p>
     </div>
   </div>
 
   <script>
     const MAX_SHOTS = 20;
     
-    // 1. REPLACE THIS URL WITH YOUR API DEPLOYMENT URL FROM PHASE 2
+    // REPLACE THIS URL WITH YOUR API DEPLOYMENT URL FROM PHASE 2
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxHE4NAhz0A5Yc4KXih0XrGmxxF_2YaKdzFuaOC4Azt-FFoeWTVmMuDbqds9-Xi_utjcQ/exec"; 
 
     let deviceId = localStorage.getItem('camera_device_uuid');
     if (!deviceId) {
-      // Create permanent unique client signature
       deviceId = 'device_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
       localStorage.setItem('camera_device_uuid', deviceId);
     }
 
     let shotsTaken = 0;
     let localStream = null;
+    let videoDevices = [];
+    let currentDeviceIndex = 0;
+    const uploadQueue = [];
+    let isUploading = false;
 
     const video = document.getElementById('viewfinder');
     const canvas = document.getElementById('captureCanvas');
     const context = canvas.getContext('2d');
     const counterDisplay = document.getElementById('counterDisplay');
     const snapBtn = document.getElementById('snapBtn');
+    const cycleLensBtn = document.getElementById('cycleLensBtn');
     const statusMsg = document.getElementById('status-msg');
+    const flashOverlay = document.getElementById('flashOverlay');
 
-    // Analog Kodak Style Stamp Formatting
-    function setAnalogDate() {
-      const today = new Date();
-      const yy = String(today.getFullYear()).slice(-2);
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-      dateStamp.innerText = `'${yy} ${mm} ${dd}`;
-    }
-    setAnalogDate();
-
-    // 1. SILENT SYNC ON RUNTIME
+    // 1. RUNTIME SETUP & BACKGROUND ROLL SYNC
     async function syncRollStatus() {
       try {
         const response = await fetch(`${GAS_URL}?deviceId=${deviceId}`);
@@ -323,11 +340,13 @@
         
         updateUI();
         if (shotsTaken < MAX_SHOTS) {
-          startCamera();
+          await initCamera();
         }
       } catch (err) {
         console.error(err);
-        statusMsg.innerText = "Sync failure. Re-scanning.";
+        statusMsg.innerText = "SYNC FAILED. RE-SHUTTER.";
+        // Fallback camera start even on network failure
+        await initCamera();
       }
     }
 
@@ -337,90 +356,216 @@
       
       if (remaining <= 0) {
         snapBtn.disabled = true;
-        statusMsg.innerText = "ROLL FINISHED! DEVELOPING TOMORROW.";
+        statusMsg.innerText = "ROLL EMPTY. SHUTTER LOCKED.";
         if (localStream) {
           localStream.getTracks().forEach(track => track.stop());
         }
       } else {
         snapBtn.disabled = false;
-        statusMsg.innerText = "READY TO CAPTURE";
+        statusMsg.innerText = "READY";
       }
     }
 
-    async function startCamera() {
+    // 2. LENS CYCLING & HD CONFIGURATIONS
+    async function initCamera() {
       try {
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-        }
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "environment" }, 
-          audio: false 
-        });
-        
-        localStream = stream;
-        video.srcObject = stream;
+        await enumerateCameras();
+        await startCameraWithIndex(currentDeviceIndex);
       } catch (err) {
         console.error(err);
-        statusMsg.innerText = "CAMERA ACCESS DENIED!";
-        snapBtn.disabled = true;
+        statusMsg.innerText = "LENS SELECTOR FAILURE.";
       }
     }
 
-    // 2. CAPTURING DUAL SAVED FILE FRAMES
-    snapBtn.addEventListener('click', () => {
+    async function enumerateCameras() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        videoDevices = devices.filter(d => d.kind === 'videoinput');
+      } catch (err) {
+        console.error("Camera index enumeration failure:", err);
+      }
+    }
+
+    cycleLensBtn.addEventListener('click', async () => {
+      if (videoDevices.length <= 1) {
+        statusMsg.innerText = "SINGLE SYSTEM CAMERA ONLY";
+        return;
+      }
+      currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+      await startCameraWithIndex(currentDeviceIndex);
+    });
+
+    async function startCameraWithIndex(index) {
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+      }
+
+      if (videoDevices.length === 0) {
+        // Safe standard fallback constraints
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 3840 },
+              height: { ideal: 2160 }
+            },
+            audio: false
+          });
+          video.srcObject = localStream;
+        } catch (e) {
+          statusMsg.innerText = "SYSTEM REJECTED CAMERA ACCESS";
+        }
+        return;
+      }
+
+      const device = videoDevices[index];
+      const constraints = {
+        video: {
+          deviceId: { exact: device.deviceId },
+          // Maximum Ultra HD stream allocation
+          width: { ideal: 3840 },
+          height: { ideal: 2160 }
+        },
+        audio: false
+      };
+
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = localStream;
+        
+        let label = device.label || `LENS ${index}`;
+        // Map common cameras for aesthetic feedback
+        if (label.toLowerCase().includes('back')) {
+          label = label.toLowerCase().includes('wide') ? "0.5x ULTRA-WIDE LENS" : "1.0x MAIN LENS";
+        } else if (label.toLowerCase().includes('front')) {
+          label = "FRONT FACING PORTRAIT LENS";
+        }
+        statusMsg.innerText = label.toUpperCase();
+      } catch (err) {
+        console.warn("Retrying default facingMode constraints for index:", index, err);
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: index % 2 === 0 ? "environment" : "user", width: { ideal: 3840 } },
+            audio: false
+          });
+          video.srcObject = localStream;
+          statusMsg.innerText = index % 2 === 0 ? "PRIMARY REAR LENS" : "FRONT FACING PORTRAIT LENS";
+        } catch (e) {
+          statusMsg.innerText = "SYSTEM REJECTED CAMERA ACCESS";
+        }
+      }
+    }
+
+    // 3. HARDWARE LED FLASH INTERFACE CONTROLS
+    async function setHardwareTorch(on) {
+      if (!localStream) return;
+      const track = localStream.getVideoTracks()[0];
+      if (track && typeof track.getCapabilities === 'function') {
+        try {
+          const caps = track.getCapabilities();
+          if (caps.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: on }]
+            });
+          }
+        } catch (e) {
+          console.warn("Hardware led flash controls not available on this camera", e);
+        }
+      }
+    }
+
+    // 4. INSTANTANEOUS CAPTURE & ASYNC BACK-TO-BACK QUEUING
+    snapBtn.addEventListener('click', async () => {
       if (shotsTaken >= MAX_SHOTS) return;
 
-      // Trigger structural analog screen flash
-      video.classList.remove('flash-active');
-      void video.offsetWidth; 
-      video.classList.add('flash-active');
-
-      statusMsg.innerText = "WINDING FILM...";
+      // Lock shutter button momentarily during mechanics (~150ms delay total)
       snapBtn.disabled = true;
 
+      // Increment counter immediately to block lag and lock out double clicks
+      shotsTaken++;
+      updateUI();
+
+      // Trigger structural white screen flash overlay
+      flashOverlay.classList.remove('flash-triggered');
+      void flashOverlay.offsetWidth;
+      flashOverlay.classList.add('flash-triggered');
+
+      // Attempt physical hardware LED flash trigger
+      await setHardwareTorch(true);
+
+      // Lock current stream dimensions immediately to canvas
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // --- CAPTURE 1: RAW NEGATIVE (Unfiltered, high quality) ---
+      // --- CAPTURE 1: LOSS-LESS ULTRA HD RAW NEGATIVE ---
       context.filter = "none";
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const rawImageDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const rawImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); // 1.0 = Lossless Ultra HD export Quality
       const rawBase64 = rawImageDataUrl.split(',')[1];
 
-      // --- CAPTURE 2: PORTRA 400 PRINT (Kodak color profile) ---
-      context.filter = "sepia(0.25) contrast(1.15) brightness(1.0) saturate(1.25) hue-rotate(-5deg)";
+      // --- CAPTURE 2: LOSS-LESS PORTRA 400 EMULATED PRINT ---
+      // Hardened Kodak Portra emulation values
+      context.filter = "sepia(0.25) contrast(1.15) saturate(1.22) hue-rotate(-6deg) brightness(1.02)";
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      // Print date stamp on Kodak image
-      context.filter = "none";
-      context.fillStyle = "#ff5500";
-      context.font = `bold ${Math.max(28, canvas.width * 0.045)}px Courier New, monospace`;
-      const stampText = dateStamp.innerText;
-      context.fillText(stampText, canvas.width - (canvas.width * 0.28), canvas.height - (canvas.height * 0.05));
-
-      const filteredImageDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      const filteredImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); // Lossless quality
       const filteredBase64 = filteredImageDataUrl.split(',')[1];
 
-      // Send to Drive (Stores filtered as print, unfiltered as raw negative)
+      // De-active LED physical flash immediately after frame capture
+      setTimeout(async () => {
+        await setHardwareTorch(false);
+      }, 100);
+
+      // Release shutter block instantly within 150ms for rapid consecutive snaps!
+      setTimeout(() => {
+        if (shotsTaken < MAX_SHOTS) {
+          snapBtn.disabled = false;
+          statusMsg.innerText = "READY";
+        }
+      }, 150);
+
+      // Queue payloads into non-blocking background network thread
+      uploadQueue.push({
+        filteredImage: filteredBase64,
+        rawImage: rawBase64,
+        deviceId: deviceId
+      });
+
+      // Fire off processor thread asynchronously
+      processUploadQueue();
+    });
+
+    // 5. SECURE BACKGROUND UPLOAD CONTROLS
+    function processUploadQueue() {
+      if (isUploading || uploadQueue.length === 0) return;
+      isUploading = true;
+
+      const currentTask = uploadQueue[0];
+      const itemsLeft = uploadQueue.length;
+      statusMsg.innerText = `WINDING FILM... (${itemsLeft} IN COCKPIT)`;
+
       fetch(GAS_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          filteredImage: filteredBase64,
-          rawImage: rawBase64,
-          deviceId: deviceId
-        })
+        body: JSON.stringify(currentTask)
       }).then(() => {
-        shotsTaken++;
-        updateUI();
+        uploadQueue.shift();
+        isUploading = false;
+        
+        if (uploadQueue.length === 0) {
+          statusMsg.innerText = shotsTaken >= MAX_SHOTS ? "ROLL EMPTY. SHUTTER LOCKED." : "READY";
+        } else {
+          // Process next background file
+          processUploadQueue();
+        }
       }).catch(err => {
-        console.error(err);
-        statusMsg.innerText = "UPLOADER TIMED OUT. TRY AGAIN.";
-        snapBtn.disabled = false;
+        console.error("Transmission failed, retrying in 3 seconds...", err);
+        isUploading = false;
+        statusMsg.innerText = "UPLOADER DROPPED. RETRYING...";
+        setTimeout(processUploadQueue, 3000); // Retry loop
       });
-    });
+    }
 
     // Boot up
     syncRollStatus();
